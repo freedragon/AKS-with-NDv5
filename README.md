@@ -1,7 +1,7 @@
 # AKS-with-NDv5
 <!-- How to deploy AKS node pool (not NAP) with ND96isr H100 v5 nodes as worker and run nccl-test. -->
 
-Azure AKS에서 ND96isr H100 v5 sku의 노드 풀을 배포하고, Nvidia Node Feature Discovery, Network Operator 및 GPU Operator를 Helm Chart로 배포 하여 Infiniband 구동을 NCCL-Test를 실행해서 확인하는 방법에 대한 가이드 입니다. (2025년 2워 마지막 주 기준)
+Azure AKS에서 ND96isr H100 v5 sku의 노드 풀을 배포하고, Nvidia Node Feature Discovery, Network Operator 및 GPU Operator를 Helm Chart로 배포 하여 Infiniband 구동을 NCCL-Test를 실행해서 확인하는 방법에 대한 가이드 입니다. (2025년 2월 마지막 주 기준)
 
 아래 참조 사이트의 [Microsoft Community Hub](https://techcommunity.microsoft.com/blog/azurehighperformancecomputingblog/deploy-ndm-v4-a100-kubernetes-cluster/3838871)와 [Github 리포](https://github.com/edwardsp/ai-on-aks)에서 배포 방법 등에 대해 자세히 가이드 하고 있습니다만, Infiniband용 Network Driver와 Nvidia GPU Driver의 버젼이 업그레이드 되면서 가이드에서 최신 Helm Chart를 설치 하면 정상적으로 설정이 되지 않는 이슈 있습니다. (추가 설정을 하지 않으먄 gpu-operator가 설치 되지 않고 Pod가 Init 상태로 계속 유지 되었습니다)
 
