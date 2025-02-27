@@ -52,7 +52,7 @@ az feature register --name AKSInfinibandSupport --namespace Microsoft.ContainerS
 
 #### Azure 리소스 그룹 생성
 
-```
+```console
 az group create --name $RESOURCE_GROUP --location $LOCATION
 ```
 
@@ -393,23 +393,23 @@ spec:
 
 저장된 YAML 파일로 작업을 실행하는 방법은 다음과 같습니다.
 
-```bash
+```console
 kubectl apply -f nccl-allreduce-job1.yaml
 ```
 
 실행 중인 Volcano Pod들의 상태 확인을 위해서는 다음의 명령줄 들 중 하나를 실행 하세요.
 
-```bash
+```console
 kubectl get podgroup
 ```
 또는
-```bash
+```console
 kubectl get job.batch.volcano.sh
 ```
 
 실행 결과를 확인 하시려면 Volcano Job Master의 로그를 확인 해야 합니다. Pod 리스트를 확인해 보시면 mpimaster가 이름에 포함된 Pod를 찾으시면 됩니다.
 
-```bash
+```console
 kubectl logs <mpimaster pod>
 ```
 
