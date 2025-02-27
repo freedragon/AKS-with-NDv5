@@ -14,6 +14,18 @@ Azure AKS에서 ND96isr H100 v5 sku의 노드 풀을 배포하고, Nvidia Node F
 > [이전 가이드](https://learn.microsoft.com/en-us/azure/aks/gpu-cluster?tabs=add-ubuntu-gpu-node-pool) 가 포함된 AKS + GPU 사용 가이드의 GPU Device Plugin 설치를 하시게 되면 GPU Operator와 충돌이 발생 할 수 있습니다. Azure Reosurce Manager 또느 Terraform등으로 IaC 방식 배포를 하시는 경우 반드시 드라이버가 설치 되지 않도록 주의 해 주세요.
 > 
 
+#### \[준비 작업\] 배포용 환경 변수 정의
+
+전체적인 배포 과정에서 필요한 리소스 그룹이름, 데이터 센터 (LOCATION), AKS 클러스터 이름 및 ACR 의 이름등을 정의 합니다.
+<!-- The following are variables will be used in the deployment steps: -->
+
+```
+export RESOURCE_GROUP=<리소스 그룹이름>
+export LOCATION=<Azure 리젼. 예를 들어 KoreaCentral>
+export CLUSTER_NAME=<AKS 클러스터 이름>
+export ACR_NAME=<ACR 이름>
+```
+
 #### \[준비 작업\] aks-preview 확장을 Azure CLI로 설치 
 
 AKS 배포 중에 skip-gpu-driver-install 옵션을 사용하기 위해 필요한 작업 입니다.
@@ -54,8 +66,18 @@ az acr create \
     --admin-enabled
 ```
 
+이미 ACR 이 AKS가 배포 될 동일 구독에 배포된 경우, 다음의 가이드를 참고하셔서 AKS에 Attach 하실 수 있습니다.
+
+[Attach an ACR to an existing AKS cluster](https://learn.microsoft.com/en-us/azure/aks/cluster-container-registry-integration?tabs=azure-cli#attach-an-acr-to-an-existing-aks-cluster) 
+
+```
+# Attach using acr-name
+az aks update --name myAKSCluster --resource-group myResourceGroup --attach-acr <acr-name>
+```
+
 #### AKS 클러스터 배포
 
+미리 정의된 환경 변수들의 값을 이용해서 AKS Cluster를 배포 합니다. 배포시 Standard_DS2_v3 sku로 2개의 노드를 생성 합니다.
 ```
 az aks create \
   --resource-group $RESOURCE_GROUP \
@@ -73,7 +95,7 @@ az aks create \
 
 #### GPU (ND96isr H100 v5) 노드풀 배포
 
-This will create a node pool using for NDv5 VMs.  The `SkipGPUDriverInstall=true` tag is used to ensure AKS is not managing the GPU drivers.  Instead we will manage this with the NVIDIA GPU operator.
+AKS 클러스터의 배포가 끝나면 이어서 GPU가 장착된 sku (Standard_ND96isr_H100_v5)의 노드들을 추가로 배포 합니다. 배포 시 노드들은 별도의 노드풀에 배포 됩니다. 아래 명령줄을 보시면 노드풀의 이름음 `ndv5` 입니다.  `SkipGPUDriverInstall=true` tag is used to ensure AKS is not managing the GPU drivers.  Instead we will manage this with the NVIDIA GPU operator.
 
 ````
 az aks nodepool add \
@@ -98,9 +120,10 @@ az aks nodepool add \
     - Helmchart 이름: **gpu-operator**
     - 버젼: v24.9.2
 
-#### Helm
+#### Helm 설치
 
-Helm is a package manager for Kubernetes that allows you to easily deploy and manage applications on your AKS cluster.  The following commands will get the latest version of Helm and install it locally:
+Heml을 처음 사용 하시는 거라면 다음의 명령줄들을 실행 하셔서 Helm CLI를 다운로드 하실 수 있습니다. 이미 사용 중이라면 무시 하시면 됩니다.
+<!--Kubernets의 패키지 매니져인 Helm is a package manager for Kubernetes that allows you to easily deploy and manage applications on your AKS cluster.  The following commands will get the latest version of Helm and install it locally: -->
 
 ```
 curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
@@ -110,10 +133,12 @@ chmod 700 get_helm.sh
 
 ### NVIDIA Drivers
 
-The NVIDIA CPU and Network operators are used to manage the GPU drivers and Infiniband drivers on the NDv5 nodes.  In this configuration we will install the Node Feature Discovery separately as it is used by both operators.  The installations will all use Helm.
+NC/ND sku의 GPU 노드들을 배포 한 후, Infiniband와 GPU 드라이버를 설치 해야 Tensorflow나 Pythoch등을 이용해서 멀티노드 학습이나 서비스가 가능 합니다. 설정을 위해서는 노드에 장치된 물리 장치를 식별하는 Node Feature Discovery 가 우선 설치 되어야 합니다. 이 패키지들은 별도의 네임스페이스로 분리 해서 진행 합니다.
+<!-- The NVIDIA CPU and Network operators are used to manage the GPU drivers and Infiniband drivers on the NDv5 nodes.  In this configuration we will install the Node Feature Discovery separately as it is used by both operators.  The installations will all use Helm. -->
 
 #### NVIDIA operator들을 위한 네임스페이스 생성
 
+NDF와 Operator들이 설치/운영 될 네임스페이스를 생성 합니다.
 ```
 kubectl create namespace nvidia-operator
 ```
