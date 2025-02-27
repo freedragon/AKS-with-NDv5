@@ -19,7 +19,7 @@ Azure AKS에서 ND96isr H100 v5 sku의 노드 풀을 배포하고, Nvidia Node F
 전체적인 배포 과정에서 필요한 리소스 그룹이름, 데이터 센터 (LOCATION), AKS 클러스터 이름 및 ACR 의 이름등을 정의 합니다.
 <!-- The following are variables will be used in the deployment steps: -->
 
-```bash
+```console
 export RESOURCE_GROUP=<리소스 그룹이름>
 export LOCATION=<Azure 리젼. 예를 들어 KoreaCentral>
 export CLUSTER_NAME=<AKS 클러스터 이름>
@@ -30,7 +30,7 @@ export ACR_NAME=<ACR 이름>
 
 AKS 배포 중에 skip-gpu-driver-install 옵션을 사용하기 위해 필요한 작업 입니다.
 <!-- The aks-preview extension is required to deploy the AKS cluster with GPU nodes by enabling the option. -->
-```bash
+```console
 az extension add --name aks-preview
 ```
 
@@ -38,7 +38,7 @@ az extension add --name aks-preview
 
 AKS 배포 전에 Infiniband 를 지원 하도록 Feature를 Azure 구독에 Azure CLI로 등록 해 주셔야 합니다. 
 <!-- The feature need to be registered to ensure the AKS cluster is deployed with Infiniband support.  The following command will register the feature: -->
-```bash
+```console
 az feature register --name AKSInfinibandSupport --namespace Microsoft.ContainerService
 ```
 
@@ -46,7 +46,7 @@ az feature register --name AKSInfinibandSupport --namespace Microsoft.ContainerS
 > [!NOTE]  
 > Feature들의 등록 상태 확인을 위해서 다음의 명령을 수행 하세요. 등록이 완료되면 "Registered" 가 출력 됩니다.
 > 
-> ```bash
+> ```console
 > az feature show --name AKSInfinibandSupport --namespace Microsoft.ContainerService --query properties.state --output tsv
 > ```
 
@@ -58,7 +58,7 @@ az group create --name $RESOURCE_GROUP --location $LOCATION
 
 #### AKS 에서 사용할 Container Registry 생성 (이미 생성된 ACR 이 있는 경우 클러스터 생성으로 진행 하시면 됩니다)
 
-```bash
+```console
 az acr create \
     --resource-group $RESOURCE_GROUP \
     --name $ACR_NAME \
@@ -70,15 +70,15 @@ az acr create \
 
 [Attach an ACR to an existing AKS cluster](https://learn.microsoft.com/en-us/azure/aks/cluster-container-registry-integration?tabs=azure-cli#attach-an-acr-to-an-existing-aks-cluster) 
 
-```bash
+```console
 # Attach using acr-name
-az aks update --name myAKSCluster --resource-group myResourceGroup --attach-acr <acr-name>
+az aks update --name myAKSCluster --resource-group myResourceGroup --attach-acr <ACR 이름>
 ```
 
 #### AKS 클러스터 배포
 
 미리 정의된 환경 변수들의 값을 이용해서 AKS Cluster를 배포 합니다. 배포시 Standard_DS2_v3 sku로 2개의 노드를 생성 합니다.
-```bash
+```console
 az aks create \
   --resource-group $RESOURCE_GROUP \
   --node-resource-group ${RESOURCE_GROUP}-nrg \
@@ -97,7 +97,7 @@ az aks create \
 
 AKS 클러스터의 배포가 끝나면 이어서 GPU가 장착된 sku (Standard_ND96isr_H100_v5)의 노드들을 추가로 배포 합니다. 배포 시 노드들은 별도의 노드풀에 배포 됩니다. 아래 명령줄을 보시면 노드풀의 이름음 `ndv5` 입니다.  `SkipGPUDriverInstall=true`  태그는 기본적으로 드라이버가 포함된 이미지 대신 기본 OS 이미지의 노드를 배포 합니다. 서비스 구동에 필요한 드라이버들은 이후 과정에서 직접 설치 하게 됩니다.
 
-````bash
+````console
 az aks nodepool add \
   --resource-group $RESOURCE_GROUP \
   --cluster-name $CLUSTER_NAME \
@@ -125,7 +125,7 @@ az aks nodepool add \
 Heml을 처음 사용 하시는 거라면 다음의 명령줄들을 실행 하셔서 Helm CLI를 다운로드 하실 수 있습니다. 이미 사용 중이라면 무시 하시면 됩니다.
 <!--Kubernets의 패키지 매니져인 Helm is a package manager for Kubernetes that allows you to easily deploy and manage applications on your AKS cluster.  The following commands will get the latest version of Helm and install it locally: -->
 
-```bash
+```console
 curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
 chmod 700 get_helm.sh
 ./get_helm.sh
@@ -139,7 +139,7 @@ NC/ND sku의 GPU 노드들을 배포 한 후, Infiniband와 GPU 드라이버를 
 #### NVIDIA operator들을 위한 네임스페이스 생성
 
 NDF와 Operator들이 설치/운영 될 네임스페이스를 생성 합니다.
-```bash
+```console
 kubectl create namespace nvidia-operator
 ```
 
@@ -150,7 +150,7 @@ kubectl create namespace nvidia-operator
 
 [Node Feature Discovery](https://github.com/kubernetes-sigs/node-feature-discovery) 는 실행시 노드의 하드웨어를 검색해서 노드의 레이블에 표시해 주는 역활을 수행 합니다.
 
-```bash
+```console
 helm upgrade -i --wait \
   -n nvidia-operator node-feature-discovery node-feature-discovery \
   --repo https://kubernetes-sigs.github.io/node-feature-discovery/charts \
@@ -166,7 +166,7 @@ helm upgrade -i --wait \
 
 참조 문서들과 달리 테스트 결과 Network operator의 24.07.0 버젼을 설치 해야 Network Operator가 정상적으로 설치 되는 것을 확인 하였습니다.
 
-```bash
+```console
 helm upgrade -i --wait \
   -n nvidia-operator network-operator network-operator \
   --repo https://helm.ngc.nvidia.com/nvidia \
@@ -187,7 +187,7 @@ helm upgrade -i --wait \
 > [!Note]
 > network-operator가 정상적으로 설치 된 경우 다수의 Pod들이 오퍼레이터용 네임스페이스에서 실행 됩니다. 다음의 명령을 수행 하면 노드의 장치 들 중에 GPU와 Mellanox (Infiniband) 장치의 숫자를 표시 해 줍니다. (최대값은 ND H100 v5의 경우 8 입니다)
 >
-> ```bash
+> ```console
 > kubectl describe node <NDv5_AKS_node> | grep -e "nvidia.com/mlnxnics" -e "nvidia.com/gpu"
 > ```
 
@@ -195,7 +195,7 @@ helm upgrade -i --wait \
 
 Helm 으로 Nvidia GPU 드라이버를 설치 합니다.
 
-```bash
+```console
 helm upgrade -i --wait \
   -n nvidia-operator gpu-operator gpu-operator \
   --repo https://helm.ngc.nvidia.com/nvidia \
@@ -214,7 +214,7 @@ Kubernest로 HPC나 AI 학습등의 고성능 분산 작업을 쉽게 수행 할
 [Volcano-sh]: https://volcano.sh/en/ (Job Orchestrator on Kubernetes): v1.11.0
 	• Volcano do nothing when there are not enough resources available (from node description)
 
-```bash
+```console
 kubectl apply -f https://raw.githubusercontent.com/volcano-sh/volcano/release-1.11/installer/volcano-development.yaml
 ```
 
@@ -229,7 +229,35 @@ AKS 클러스터에 배포된 GPU노드들 사이에서 Infiniband로 고속 데
 
 #### NCCL Allreduce 컨데이너 이미지 빌드
 
-```bash
+컨테이너 이미지 빌드 전에 몇가지 준비가 필요 합니다. 우선 노드의 CPU range/affinity를 정의 한 Topology 파일들을 VM Sku에 맞게 다운로드 해야 합니다.
+Azure에서 제공 되는 기본적인 파일들은 [Azure HPC Image Github Repo](https://github.com/Azure/azhpc-images/tree/master/topology)를 참고 하세요.
+
+본 가이스에서 필요한 ND H100 v5용 Topology 파일은 아래 링크에서 다운로드 하실 수 있습니다.
+
+[ndv5-topo.xml](https://github.com/Azure/azhpc-images/blob/master/topology/ndv5-topo.xml)
+
+파일은 컨테이너 이미지가 빌드 되는 컴퓨터 (또는 VM)에 Dockerfile의 위치에 복사해 주시면 됩니다.
+
+이미지의 내용은 간단합니다. NGC Pytorch:23.05-py3 이미지를 기반으로 nccl-test 빌드를 위한 Dependecy들을 설치하고 nccl-test.sh 파일을 실행하고, topology를 복사 합니다.
+
+```dockerfile
+ARG FROM_IMAGE_NAME=nvcr.io/nvidia/pytorch:23.05-py3
+
+FROM ${FROM_IMAGE_NAME}
+
+RUN apt update
+RUN apt-get -y install build-essential
+RUN apt-get -y install infiniband-diags
+RUN apt-get -y install openssh-server
+RUN apt-get -y install kmod
+COPY nccl-tests.sh .
+RUN ./nccl-tests.sh
+COPY ndv5-topo.xml .
+```
+
+이미지 빌드는 대략 10분 정도 소요 됩니다. 빌드가 끝나면 ACR에 Push 하는 것으로 이미지 준비는 끝이 납니다.
+
+```console
 cd nccl-test
 az acr login -n $ACR_NAME
 docker build -t $ACR_NAME.azurecr.io/nccltest .
@@ -238,9 +266,7 @@ docker push $ACR_NAME.azurecr.io/nccltest
 
 #### NCCL Allreduce Job 실행
 
-```bash
-helm install nccl-allreduce-2n ./examples/nccl-allreduce --set image=$ACR_NAME.azurecr.io/nccltest,numNodes=2
-```
+Vocano로 2개의 ND H100 v5 노드에 Pod를 배포하고 Allreduce Job을 실행하고 결과를 출력하는 Job 설정 파일의 내용은 다음을 참고 하세요. 아래 내용을 nccl-allrecude-job1.yaml 파일에 저장 하고 ACR의 이름을 변경해 주세요.
 
 ```yaml
 apiVersion: batch.volcano.sh/v1alpha1
@@ -283,8 +309,34 @@ spec:
                   MPI_HOST=$(cat /etc/volcano/mpiworker.host | tr "\n" ",")
                   mkdir -p /var/run/sshd; /usr/sbin/sshd
                   echo "HOSTS: $MPI_HOST"
-                  mpirun --allow-run-as-root -np 16 -npernode 8 --bind-to numa --map-by ppr:8:node -hostfile /etc/volcano/mpiworker.host -x NCCL_DEBUG=info -x UCX_TLS=tcp -x NCCL_TOPO_FILE=/workspace/ndv4-topo.xml -x UCX_NET_DEVICES=eth0 -x CUDA_DEVICE_ORDER=PCI_BUS_ID -x NCCL_SOCKET_IFNAME=eth0 -mca coll_hcoll_enable 0 /workspace/nccl-tests/build/all_reduce_perf -b 8 -f 2 -g 1 -e 8G -c 1 | tee /home/re
-              image: cgacr2.azurecr.io/pytorch_nccl_tests_2303:latest
+                  # mpirun --allow-run-as-root -np 16 -npernode 8 --bind-to numa --map-by ppr:8:node -hostfile /etc/volcano/mpiworker.host -x NCCL_DEBUG=info -x UCX_TLS=tcp -x NCCL_TOPO_FILE=/workspace/ndv4-topo.xml -x UCX_NET_DEVICES=eth0 -x CUDA_DEVICE_ORDER=PCI_BUS_ID -x NCCL_SOCKET_IFNAME=eth0 -mca coll_hcoll_enable 0 /workspace/nccl-tests/build/all_reduce_perf -b 8 -f 2 -g 1 -e 8G -c 1 | tee /home/re
+                  mpirun \
+                    --allow-run-as-root \
+                    -np 16 \
+                    -npernode 8 \
+                    --bind-to numa \
+                    --map-by ppr:8:node \
+                    -hostfile /etc/volcano/mpiworker.host  \
+                    -x SHARP_SMX_UCX_INTERFACE=mlx5_0:1 \
+                    -x LD_LIBRARY_PATH \
+                    -mca plm_rsh_no_tree_spawn 1 \
+                    -mca plm_rsh_num_concurrent 800 \
+                    -mca coll_hcoll_enable 0 \
+                    -x UCX_TLS=rc \
+                    -x UCX_NET_DEVICES=mlx5_0:1 \
+                    -x CUDA_DEVICE_ORDER=PCI_BUS_ID \
+                    -x NCCL_SOCKET_IFNAME=eth0 \
+                    -x NCCL_DEBUG=warn \
+                    -x NCCL_NET_GDR_LEVEL=5 \
+                    -x NCCL_MIN_NCHANNELS=32 \
+                    -x NCCL_TOPO_FILE=/workspace/ndv5-topo.xml \
+                    -x SHARP_COLL_ENABLE_SAT=1 \
+                    -x SHARP_COLL_LOG_LEVEL=3 \
+                    -x SHARP_COLL_ENABLE_PCI_RELAXED_ORDERING=1 \
+                    -x NCCL_COLLNET_ENABLE=1 \
+                    -x NCCL_ALGO=CollnetChain,NVLS \
+                    /workspace/nccl-tests/build/all_reduce_perf -b1K -f 2 -g1 -e 16G
+              image: <ACR 이름>.azurecr.io/pytorch_nccl_tests_2303:latest
               securityContext:
                 capabilities:
                   add: ["IPC_LOCK"]
@@ -310,7 +362,7 @@ spec:
                 - -c
                 - |
                   mkdir -p /var/run/sshd; /usr/sbin/sshd -D;
-              image: cgacr2.azurecr.io/pytorch_nccl_tests_2303:latest
+              image: <ACR 이름>.azurecr.io/pytorch_nccl_tests_2303:latest
               securityContext:
                 capabilities:
                   add: ["IPC_LOCK"]
@@ -339,7 +391,29 @@ spec:
 ---
 ```
 
-참조 사이트:
+저장된 YAML 파일로 작업을 실행하는 방법은 다음과 같습니다.
+
+```bash
+kubectl apply -f nccl-allreduce-job1.yaml
+```
+
+실행 중인 Volcano Pod들의 상태 확인을 위해서는 다음의 명령줄 들 중 하나를 실행 하세요.
+
+```bash
+kubectl get podgroup
+```
+또는
+```bash
+kubectl get job.batch.volcano.sh
+```
+
+실행 결과를 확인 하시려면 Volcano Job Master의 로그를 확인 해야 합니다. Pod 리스트를 확인해 보시면 mpimaster가 이름에 포함된 Pod를 찾으시면 됩니다.
+
+```bash
+kubectl logs <mpimaster pod>
+```
+
+참조 사이트:  
 	- [GitHub - Deployment scripts for AKS with AI examples]: https://github.com/edwardsp/ai-on-aks  
 	- [Deploy NDm_v4 (A100) Kubernetes Cluster | Microsoft Community Hub]: https://techcommunity.microsoft.com/blog/azurehighperformancecomputingblog/deploy-ndm-v4-a100-kubernetes-cluster/3838871  
 	- [Nccl test on aks ndmv4 vm - Jingchao’s Website]: https://jingchaozhang.github.io/NCCL-test-on-AKS-NDmV4-VM/  
