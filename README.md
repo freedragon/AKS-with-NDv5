@@ -1,5 +1,5 @@
 # AKS-with-NDv5
-How to deploy AKS node pool (not NAP) with ND96isr H100 v5 nodes as worker and run nccl-test.
+<!-- How to deploy AKS node pool (not NAP) with ND96isr H100 v5 nodes as worker and run nccl-test. -->
 
 Azure AKS에서 ND96isr H100 v5 sku의 노드 풀을 배포하고, Nvidia Node Feature Discovery, Network Operator 및 GPU Operator를 Helm Chart로 배포 하여 Infiniband 구동을 NCCL-Test를 실행해서 확인하는 방법에 대한 가이드 입니다. (2025년 2워 마지막 주 기준)
 
