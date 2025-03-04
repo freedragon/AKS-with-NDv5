@@ -426,7 +426,9 @@ kubectl logs <mpimaster pod>
 
 ### 기타 참조 사이트들:  
 
-- [Deploying DeepSeek V3 on Kubernetes - KubeRay + vLLM](https://blog.mozilla.ai/deploying-deepseek-v3-on-kubernetes/)  
+- [Deploying DeepSeek V3 on Kubernetes - KubeRay + vLLM](https://blog.mozilla.ai/deploying-deepseek-v3-on-kubernetes/)
+- [Running DeepSeek on AKS with Ollama](https://techcommunity.microsoft.com/blog/azurehighperformancecomputingblog/running-deepseek-on-aks-with-ollama/4372687)  
+  - This guide provides step-by-step instructions on how to run DeepSeek on Azure Kubernetes Service (AKS). The setup utilizes an ND-H100-v5 VM to accommodate the 4-bit quantized 671-billion parameter model on a single node.  
 - [KubRay](https://github.com/ray-project/kuberay)  
 - [Ray on Kubernetes](https://docs.ray.io/en/latest/cluster/kubernetes/index.html)
 	```
