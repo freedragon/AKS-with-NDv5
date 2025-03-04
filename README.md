@@ -164,7 +164,7 @@ helm upgrade -i --wait \
 
 고속, 고성능 네트워크 디바이스가 장착된 노드에 드라이버들을 설치하고 Node에 Label(`nvidia.com/mlnxnics` )과 디바이스 숫자 (ND96isr_H100_v5의 경우 8) 를 업데이트 합니다.
 
-참조 문서들과 달리 테스트 결과 Network operator의 **24.07.0** 버젼을 설치 해야 network-operator 가 정상적으로 설치 되는 것을 확인 하였습니다.
+참조 문서들과 달리, 테스트 결과에서, Network operator의 **24.07.0** 버젼을 설치 해야 network-operator 가 정상적으로 설치 되는 것을 확인 하였습니다. (문서 작성 당시 가장 최신 버젼은 [v24.9.2](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/release-notes.html) 이었습니다)
 
 ```console
 helm upgrade -i --wait \
