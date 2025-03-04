@@ -183,13 +183,6 @@ helm upgrade -i --wait \
 > [!Note]
 > MOFED 드라이버를 특정 버젼으로 설정을 원하시면  `--set ofedDriver.version="<MOFED-VERSION>"` 옵션을 추가해 주세요.
 
-> [!Note]
-> network-operator가 정상적으로 설치 된 경우 다수의 Pod들이 오퍼레이터용 네임스페이스에서 실행 됩니다. 다음의 명령을 수행 하면 노드의 장치 들 중에 GPU와 Mellanox (Infiniband) 장치의 숫자를 표시 해 줍니다. (최대값은 ND H100 v5의 경우 8 입니다)
->
-> ```console
-> kubectl describe node <NDv5_AKS_node> | grep -e "nvidia.com/mlnxnics" -e "nvidia.com/gpu"
-> ```
-
 #### GPU Operator 설치
 
 Helm 으로 Nvidia GPU 드라이버를 설치 합니다.
@@ -204,13 +197,20 @@ helm upgrade -i --wait \
   --set toolkit.enabled=true
 ```
 
+> [!Note]
+> network-operator가 정상적으로 설치 된 경우 다수의 Pod들이 오퍼레이터용 네임스페이스에서 실행 됩니다. 다음의 명령을 수행 하면 노드의 장치 들 중에 GPU와 Mellanox (Infiniband) 장치의 숫자를 표시 해 줍니다. (최대값은 ND H100 v5의 경우 8 입니다)
+>
+> ```console
+> kubectl describe node <NDv5_AKS_node> | grep -e "nvidia.com/mlnxnics" -e "nvidia.com/gpu"
+> ```
+
 ### Volcano 설치
+
+Kubernest로 HPC나 AI 학습등의 고성능 분산 작업을 쉽게 수행 할 수 있게하는 Orchestrator 중 하나가 Volcano 입니다.
 
 > [!WARNING]
 > [Azure ML Extension for AKS](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-create-attach-kubernetes?view=azureml-api-1&preserve-view=true&tabs=python%2Cakscreate)을 설치 예정 또는 이미 설치 한 상태라면 Extension과 함께 Volcano가 설치 됩니다. 때문에 Volcano를 별도 설치 하지 않는 것이 좋겠습니다.
 > 
-
-Kubernest로 HPC나 AI 학습등의 고성능 분산 작업을 쉽게 수행 할 수 있게하는 Orchestrator 중 하나가 Volcano 입니다.
 
 참조 사이트들에서 모두 Volcano의 1.7.0 버젼을 기준으로 설명을 하고 있습니다만, 2025년 2월 현재 AKS의 기본 설치 버젼은 **1.30.5** 입니다. 
 
