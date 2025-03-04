@@ -421,4 +421,7 @@ kubectl logs <mpimaster pod>
 	- [Deploy NDm_v4 (A100) Kubernetes Cluster | Microsoft Community Hub]: https://techcommunity.microsoft.com/blog/azurehighperformancecomputingblog/deploy-ndm-v4-a100-kubernetes-cluster/3838871  
 	- [Nccl test on aks ndmv4 vm - Jingchao’s Website]: https://jingchaozhang.github.io/NCCL-test-on-AKS-NDmV4-VM/  
 	- [Releases · Azure/azhpc-images]: https://github.com/Azure/azhpc-images/releases  
-
+ 
+기타 참조 사이트들:
+	- [Deploying DeepSeek V3 on Kubernetes - KubeRay + vLLM](https://blog.mozilla.ai/deploying-deepseek-v3-on-kubernetes/)  
+	- [Deploying DeepSeek-R1 on Amazon EKS Auto Mode](https://github.com/aws-samples/deepseek-using-vllm-on-eks/blob/main/README.md)  
