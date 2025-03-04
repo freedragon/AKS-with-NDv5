@@ -207,7 +207,7 @@ helm upgrade -i --wait \
 ### Volcano 설치
 
 > [!WARNING]
-> [Azure ML Extension for AKS](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-create-attach-kubernetes?view=azureml-api-1&preserve-view=true&tabs=python%2Cakscreate)을 설치 예정 또는 이미 설치 한 상태라면 Extension과 함께 Volcano가 설치 되기 때문에 별도 하지 않는 것이 좋겠습니다.
+> [Azure ML Extension for AKS](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-create-attach-kubernetes?view=azureml-api-1&preserve-view=true&tabs=python%2Cakscreate)을 설치 예정 또는 이미 설치 한 상태라면 Extension과 함께 Volcano가 설치 됩니다. 때문에 Volcano를 별도 설치 하지 않는 것이 좋겠습니다.
 > 
 
 Kubernest로 HPC나 AI 학습등의 고성능 분산 작업을 쉽게 수행 할 수 있게하는 Orchestrator 중 하나가 Volcano 입니다.
