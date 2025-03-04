@@ -120,7 +120,7 @@ az aks nodepool add \
     - Helmchart 이름: **gpu-operator**
     - 버젼: v24.9.2
 
-#### Helm 설치
+### Helm 설치
 
 Heml을 처음 사용 하시는 거라면 다음의 명령줄들을 실행 하셔서 Helm CLI를 다운로드 하실 수 있습니다. 이미 사용 중이라면 무시 하시면 됩니다.
 <!--Kubernets의 패키지 매니져인 Helm is a package manager for Kubernetes that allows you to easily deploy and manage applications on your AKS cluster.  The following commands will get the latest version of Helm and install it locally: -->
@@ -160,7 +160,7 @@ helm upgrade -i --wait \
   --set-json worker.config.sources.pci.deviceLabelFields='["vendor"]'
 ```
 
-#### the Network Operator 설치
+#### Network Operator 설치
 
 고속, 고성능 네트워크 디바이스가 장착된 노드에 드라이버들을 설치하고 Node에 Label(`nvidia.com/mlnxnics` )과 디바이스 숫자 (ND96isr_H100_v5의 경우 8) 를 업데이트 합니다.
 
@@ -206,7 +206,7 @@ helm upgrade -i --wait \
 
 ### Volcano 설치
 
-> [!WARN]
+> [!WARNING]
 > [Azure ML Extension for AKS](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-create-attach-kubernetes?view=azureml-api-1&preserve-view=true&tabs=python%2Cakscreate)을 설치 예정 또는 이미 설치 한 상태라면 Extension과 함께 Volcano가 설치 되기 때문에 별도 설치 마시기 바랍니다.
 
 Kubernest로 HPC나 AI 학습등의 고성능 분산 작업을 쉽게 수행 할 수 있게하는 Orchestrator 중 하나가 Volcano 입니다.
