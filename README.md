@@ -109,7 +109,7 @@ az aks nodepool add \
   --tags SkipGPUDriverInstall=true
 ````
 
-###Nvidia 드라이버 설정들들 (Helm chart version들 기준) :
+### Nvidia 드라이버 설정들들 (Helm chart version들 기준) :
 - Node Feature Discovery:
     - Helmchart 이름: **node-feature-discovery**
     - 버젼: v0.17.2
@@ -183,7 +183,6 @@ helm upgrade -i --wait \
 > [!Note]
 > MOFED 드라이버를 특정 버젼으로 설정을 원하시면  `--set ofedDriver.version="<MOFED-VERSION>"` 옵션을 추가해 주세요.
 
-
 > [!Note]
 > network-operator가 정상적으로 설치 된 경우 다수의 Pod들이 오퍼레이터용 네임스페이스에서 실행 됩니다. 다음의 명령을 수행 하면 노드의 장치 들 중에 GPU와 Mellanox (Infiniband) 장치의 숫자를 표시 해 줍니다. (최대값은 ND H100 v5의 경우 8 입니다)
 >
@@ -205,7 +204,10 @@ helm upgrade -i --wait \
   --set toolkit.enabled=true
 ```
 
-###Volcano 설치
+### Volcano 설치
+
+> [!WARN]
+> [Azure ML Extension for AKS](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-create-attach-kubernetes?view=azureml-api-1&preserve-view=true&tabs=python%2Cakscreate)을 설치 예정 또는 이미 설치 한 상태라면 Extension과 함께 Volcano가 설치 되기 때문에 별도 설치 마시기 바랍니다.
 
 Kubernest로 HPC나 AI 학습등의 고성능 분산 작업을 쉽게 수행 할 수 있게하는 Orchestrator 중 하나가 Volcano 입니다.
 
