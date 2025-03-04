@@ -416,13 +416,16 @@ kubectl get job.batch.volcano.sh
 kubectl logs <mpimaster pod>
 ```
 
-참조 사이트:  
-	- [GitHub - Deployment scripts for AKS with AI examples]: https://github.com/edwardsp/ai-on-aks  
+### 참조 사이트:  
+
+ 	- [GitHub - Deployment scripts for AKS with AI examples]: https://github.com/edwardsp/ai-on-aks  
 	- [Deploy NDm_v4 (A100) Kubernetes Cluster | Microsoft Community Hub]: https://techcommunity.microsoft.com/blog/azurehighperformancecomputingblog/deploy-ndm-v4-a100-kubernetes-cluster/3838871  
 	- [Nccl test on aks ndmv4 vm - Jingchao’s Website]: https://jingchaozhang.github.io/NCCL-test-on-AKS-NDmV4-VM/  
 	- [Releases · Azure/azhpc-images]: https://github.com/Azure/azhpc-images/releases  
- 
-기타 참조 사이트들:
+
+
+### 기타 참조 사이트들:  
+
 	- [Deploying DeepSeek V3 on Kubernetes - KubeRay + vLLM](https://blog.mozilla.ai/deploying-deepseek-v3-on-kubernetes/)  
  	- [KubRay](https://github.com/ray-project/kuberay)  
   	- [Ray on Kubernetes](https://docs.ray.io/en/latest/cluster/kubernetes/index.html)
