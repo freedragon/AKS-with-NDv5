@@ -424,4 +424,18 @@ kubectl logs <mpimaster pod>
  
 기타 참조 사이트들:
 	- [Deploying DeepSeek V3 on Kubernetes - KubeRay + vLLM](https://blog.mozilla.ai/deploying-deepseek-v3-on-kubernetes/)  
+ 	- [KubRay](https://github.com/ray-project/kuberay)  
+  	- [Ray on Kubernetes](https://docs.ray.io/en/latest/cluster/kubernetes/index.html)
+   		```
+			helm repo add kuberay https://ray-project.github.io/kuberay-helm/
+			helm repo update
+			
+			# Install both CRDs and KubeRay operator v1.3.0.
+			helm install kuberay-operator kuberay/kuberay-operator --version 1.3.0
+			
+			# Confirm that the operator is running in the namespace `default`.
+			kubectl get pods
+			# NAME                                READY   STATUS    RESTARTS   AGE
+			# kuberay-operator-7fbdbf8c89-pt8bk   1/1     Running   0          27s
+     		```
 	- [Deploying DeepSeek-R1 on Amazon EKS Auto Mode](https://github.com/aws-samples/deepseek-using-vllm-on-eks/blob/main/README.md)  
