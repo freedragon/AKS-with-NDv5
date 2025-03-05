@@ -271,14 +271,34 @@ RUN ./nccl-tests.sh
 COPY ndv5-topo.xml .
 ```
 
+위의 Dockerfile에서 사용하는 nccl-tests.sh 파일의 내용은 다음과 같습니다. 아래 코드는 컨테이너에서 실행 되는 스크립트로, 실행 파일을 컨테이너 이미지 빌드 과정에서 Make로 컴파일을 하게 됩니다.
+이때, 필요한 라이브러리등은 베이스 이미지와 Dockerfile의 apt-get 명령 실행으로 설치 됩니다.
+
+```console
+#!/bin/bash
+
+git clone https://github.com/NVIDIA/nccl-tests.git
+cd nccl-tests
+make MPI=1 MPI_HOME=/usr/local/mpi
+```
+
+> [!NOTE]
+> 별도의 openmpi-dev 패키지를 설치하시는 경우 이미지 빌드에 실패할 수 있습니다.
+> 별도로 빌드 디펜던시 라이브러리를 설치하셔야 한다면 make의 파라미터 중에서 MPI_HOME 변수 값을 알맞게 변경해 주시기 바랍니다.
+> 
+
 이미지 빌드는 대략 10분 정도 소요 됩니다. 빌드가 끝나면 ACR에 Push 하는 것으로 이미지 준비는 끝이 납니다.
 
 ```console
 cd nccl-test
 az acr login -n $ACR_NAME
-docker build -t $ACR_NAME.azurecr.io/nccltest .
-docker push $ACR_NAME.azurecr.io/nccltest
+docker build -t $ACR_NAME.azurecr.io/nccltest:2025030502 .
+docker push $ACR_NAME.azurecr.io/nccltest:2025030502
 ```
+
+> [!WARNING]
+> 이미지의 테그에 latest 대신 빌드 된 날짜와 시간 또는 빌드 번호로 설정해 주시는 것이 이미지 버전 관리에 도움이 됩니다.
+> 
 
 #### NCCL Allreduce Job 실행
 
