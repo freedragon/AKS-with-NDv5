@@ -221,9 +221,18 @@ Kubernest로 HPC나 AI 학습등의 고성능 분산 작업을 쉽게 수행 할
 kubectl apply -f https://raw.githubusercontent.com/volcano-sh/volcano/release-1.11/installer/volcano-development.yaml
 ```
 
+
 > [!NOTE]
 > 참조 설치 가이드에서는 Volcano 설치시 Service Account, RoleBinding등을 추가로 생성하는 명령들의 샐행을 요구 합니다만, 최신 버젼의 경우 설치 YAML 파일 실행 시 같이 생성이 되니 무시 하셔도 됩니다.
 > 
+
+> [!WARNING]
+> AzureML Extension과 같이 설치되는 Volcano의 경우 다음의 명령을 실행해 주셔야 Service Account와 Role Binding이 생성되고 정상 실행 됩니다.
+> 
+> ```console
+> kubectl create serviceaccount -n default mpi-worker-view
+> kubectl create rolebinding default-view --namespace default --serviceaccount default:mpi-worker-view --clusterrole view
+> ```
 
 ### NCCL Allreduce 실행
 
@@ -237,7 +246,11 @@ Azure에서 제공 되는 기본적인 파일들은 [Azure HPC Image Github Repo
 
 본 가이스에서 필요한 ND H100 v5용 Topology 파일은 아래 링크에서 다운로드 하실 수 있습니다.
 
-[ndv5-topo.xml](https://github.com/Azure/azhpc-images/blob/master/topology/ndv5-topo.xml)
+[ndv5-topo.xml]([https://github.com/Azure/azhpc-images/blob/master/topology/ndv5-topo.xml](https://raw.githubusercontent.com/Azure/azhpc-images/refs/heads/master/topology/ndv5-topo.xml))
+
+> [!NOTE]
+> 파일을 바로 다운로드 할 수 있는 링크로 변경 했습니다.
+> 
 
 파일은 컨테이너 이미지가 빌드 되는 컴퓨터 (또는 VM)에 Dockerfile의 위치에 복사해 주시면 됩니다.
 
@@ -355,9 +368,6 @@ spec:
     - replicas: 2
       name: mpiworker
       template:
-        metadata:
-        annotations:
-          k8s.v1.cni.cncf.io/networks: hostdev-net,hostdev-net,hostdev-net,hostdev-net,hostdev-net,hostdev-net,hostdev-net,hostdev-net
         spec:
           containers:
             - command:
