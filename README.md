@@ -28,7 +28,7 @@ export CLUSTER_NAME=<AKS 클러스터 이름>
 export ACR_NAME=<ACR 이름>
 ```
 
-#### \[준비 작업\] aks-preview 확장을 Azure CLI로 설치 
+#### aks-preview 확장을 Azure CLI로 설치 
 
 AKS 배포 중에 skip-gpu-driver-install 옵션을 사용하기 위해 필요한 작업 입니다.
 <!-- The aks-preview extension is required to deploy the AKS cluster with GPU nodes by enabling the option. -->
