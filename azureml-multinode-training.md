@@ -44,11 +44,11 @@ job = command(
     command="python train.py --data_dir ${{inputs.pets}} --with_tracking --checkpointing_steps epoch --output_dir ./outputs",
     environment=train_environment,
     compute=gpu_compute_target,
-    <U>instance_count=num_training_nodes * num_gpus_per_node,  # For AKS, we need to set the number of instances to WORLD_SIZE instead of # of nodes.</U>
+    instance_count=num_training_nodes * num_gpus_per_node,  # For AKS, we need to set the number of instances to WORLD_SIZE instead of # of nodes.
     distribution={
         "type": "PyTorch",
         # set process count to the number of gpus per node
-        <U>"process_count_per_instance": 1, # 1 GPU per POD</U> 
+        "process_count_per_instance": 1, # 1 GPU per POD
     },
     experiment_name=experiment_name,
     display_name='train-step'
