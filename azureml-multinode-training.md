@@ -68,7 +68,7 @@ job = command(
     display_name='train-step',
     environment_variables={
         'NCCL_DEBUG': 'INFO',
-        "NCCL_TOPO_FILE"":, "ndv5-topo.xml",
+        "NCCL_TOPO_FILE": "ndv5-topo.xml",
     },
     shm_size="4g",
 )
