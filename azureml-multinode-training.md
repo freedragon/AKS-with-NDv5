@@ -101,3 +101,5 @@ Nvidia의 Network/GPU operator가 설치되어서 Cuda/PyTorch 및 Infiniband를
 [JingchaoZhang/Running-GPU-Enabled-HPC-Applications-on-Azure-Machine-Learning](https://github.com/JingchaoZhang/Running-GPU-Enabled-HPC-Applications-on-Azure-Machine-Learning)  
 
 [Distribute Training with Pytorch Lightning on Azure ML](https://medium.com/@felipe.villa.gen/distribute-traning-with-pytorch-lightning-on-azure-ml-512e0cb1728f)  
+
+[Azure Machine Learning - Environment](https://azure.github.io/azureml-cheatsheets/docs/cheatsheets/python/v1/environment/#:~:text=To%20set%20environment%20variables%20use%20the%20environment_variables%3A%20Dict%5Bstr%2C,the%20process%20where%20the%20user%20script%20is%20executed.)  
