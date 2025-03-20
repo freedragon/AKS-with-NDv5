@@ -15,12 +15,23 @@ Azure Machine Learning 에 접근할 수 있는 구독과 Workspace가 있어야
 
 ### AKS를 기반으로 분산 학습 시 달라지는 점.
 
-기본적으로 분산 학습을 위해서 training.py 를 변경해야 하는 부분과 
+기본적으로 분산 학습을 위해서 training.py 를 변경해야 하는 부분과 학습을 진행하는 파이프라인의 실행 코드 (Command)의 파라미터가 변경 되어야 합니다.
 
 [Distributed GPU training guide (SDK v2)](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-train-distributed-gpu?view=azureml-api-2)  
 
+AKS용 AzureML Extension을 설치하면 학습 Pod들의 Orchestration을 위해서 **Volcano** 가 같이 설치 됩니다. 물론, Azure ML Training Job을 API 호출을 통해서 구성해 주시면 Volcano를 이용해서 Job을 배포 하고 실행 및 모니터링 하는 등의 작업은 Extension이 제공해 줍니다.
+
+Job이 실행 되면 학습 진행 중에 정확도(Accuracy), LOSS 및 노드의 CPU, Memory, Disk, Network 리소스 사용량을 Azure ML Studio에서 모니터링 할 수 있습니다. 
+
+#### 학습 코드 변경
+
 ```
-torch.distributed.init_process_group(backend='nccl', init_method='env://')
+import torch.distributed as dist
+```
+
+학습용 스크립트에서 실제 학습 코드를 실행하기 전에 아래의 코드를 추가 해서 분산 학습을 위한 준비를 합니다.
+```
+dist.init_process_group(backend='nccl', init_method='env://')
 ```
 
 **Azure ML Studio Workspace**에서 **PyTorch** 분산 학습을 위해서 기본 제공는 환경 변수들은 다음과 같습니다:
@@ -32,16 +43,19 @@ torch.distributed.init_process_group(backend='nccl', init_method='env://')
 - LOCAL_RANK: The local (relative) rank of the process within the node. The possible values are 0 to (# of processes on the node - 1). This information is useful because many operations such as data preparation only should be performed once per node, usually on local_rank = 0.
 - NODE_RANK: The rank of the node for multi-node training. The possible values are 0 to (total # of nodes - 1).
 
+#### 학습 파이프라인 코드 변경
 
 ```python
 num_training_nodes = 2 # Number of nodes available for distributed training
 num_gpus_per_node = 8 # Number of GPUs per node (8 for ND96isr_H100_v5)
+# Unlike document, command line should be change to run distributed learning.
+str_command = "OMP_NUM_THREADS=12 torchrun --rdzv_id 202503 train.py --data_dir ${{inputs.pets}} --with_tracking --checkpointing_steps epoch --output_dir ./outputs"
 
 # Define the job!
 job = command(
     code=src_dir,
     inputs=inputs,
-    command="python train.py --data_dir ${{inputs.pets}} --with_tracking --checkpointing_steps epoch --output_dir ./outputs",
+    command=str_command,
     environment=train_environment,
     compute=gpu_compute_target,
     instance_count=num_training_nodes * num_gpus_per_node,  # For AKS, we need to set the number of instances to WORLD_SIZE instead of # of nodes.
@@ -55,6 +69,10 @@ job = command(
 )
 ```
 
+
+
+NCCL이 실행시 GPU Topology를 탐색을 통해 구성 하지만 미리 구성된 내용이 있다면 제공해 주는 것이 좋겠습니다. 이때 **NCCL_TOPO_FILE** 환경 변수를 통해서 설정해 줄 수 있습니다.
+
 ### 아직 테스트 하지 되지 않은부분:
 
 Nvidia의 Network/GPU operator가 설치되어서 Cuda/PyTorch 및 Infiniband를 사용해서 향상된 성능의 분산 학습을 테스트 하는 중에
@@ -67,6 +85,10 @@ Nvidia의 Network/GPU operator가 설치되어서 Cuda/PyTorch 및 Infiniband를
 [Distributed GPU training guide (SDK v2)](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-train-distributed-gpu?view=azureml-api-2)  
 
 [Optimized Environment for large scale distributed training](https://github.com/Azure/azureml-examples/blob/main/best-practices/largescale-deep-learning/Environment/ACPT.md)  
+
+[NCCL 2.26: Environment Variables](https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/env.html)  
+
+[Performance considerations for large scale deep learning training on Azure NDv4 (A100) series](https://techcommunity.microsoft.com/blog/azurehighperformancecomputingblog/performance-considerations-for-large-scale-deep-learning-training-on-azure-ndv4-/2693834)  
 
 [acpt-pytorch-2.2-cuda12.1 SPEC](https://github.com/Azure/azureml-assets/blob/main/assets/training/general/environments/acpt-pytorch-2.2-cuda12.1/spec.yaml)  
 
