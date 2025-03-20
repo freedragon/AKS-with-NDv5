@@ -65,10 +65,19 @@ job = command(
         "process_count_per_instance": 1, # 1 GPU per POD
     },
     experiment_name=experiment_name,
-    display_name='train-step'
+    display_name='train-step',
+    environment_variables={
+        'NCCL_DEBUG': 'INFO',
+        "NCCL_TOPO_FILE"":, "ndv5-topo.xml",
+    },
+    shm_size="4g",
 )
 ```
 
+> [!NOTE] 
+> ND96isr_H100_v5 Topology 파일 링크
+> https://github.com/Azure/azhpc-images/blob/master/topology/ndv5-topo.xml
+>
 
 
 NCCL이 실행시 GPU Topology를 탐색을 통해 구성 하지만 미리 구성된 내용이 있다면 제공해 주는 것이 좋겠습니다. 이때 **NCCL_TOPO_FILE** 환경 변수를 통해서 설정해 줄 수 있습니다.
