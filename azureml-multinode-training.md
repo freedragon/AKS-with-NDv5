@@ -32,6 +32,29 @@ torch.distributed.init_process_group(backend='nccl', init_method='env://')
 - LOCAL_RANK: The local (relative) rank of the process within the node. The possible values are 0 to (# of processes on the node - 1). This information is useful because many operations such as data preparation only should be performed once per node, usually on local_rank = 0.
 - NODE_RANK: The rank of the node for multi-node training. The possible values are 0 to (total # of nodes - 1).
 
+
+```python
+num_training_nodes = 2 # Number of nodes available for distributed training
+num_gpus_per_node = 8 # Number of GPUs per node (8 for ND96isr_H100_v5)
+
+# Define the job!
+job = command(
+    code=src_dir,
+    inputs=inputs,
+    command="python train.py --data_dir ${{inputs.pets}} --with_tracking --checkpointing_steps epoch --output_dir ./outputs",
+    environment=train_environment,
+    compute=gpu_compute_target,
+    <U>instance_count=num_training_nodes * num_gpus_per_node,  # For AKS, we need to set the number of instances to WORLD_SIZE instead of # of nodes.</U>
+    distribution={
+        "type": "PyTorch",
+        # set process count to the number of gpus per node
+        <U>"process_count_per_instance": 1, # 1 GPU per POD</U> 
+    },
+    experiment_name=experiment_name,
+    display_name='train-step'
+)
+```
+
 ### 아직 테스트 하지 되지 않은부분:
 
 Nvidia의 Network/GPU operator가 설치되어서 Cuda/PyTorch 및 Infiniband를 사용해서 향상된 성능의 분산 학습을 테스트 하는 중에
