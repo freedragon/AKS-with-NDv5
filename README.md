@@ -248,10 +248,10 @@ Azure에서 제공 되는 기본적인 파일들은 [Azure HPC Image Github Repo
 
 본 가이스에서 필요한 ND H100 v5용 Topology 파일은 아래 링크에서 다운로드 하실 수 있습니다.
 
-[ndv5-topo.xml]([https://github.com/Azure/azhpc-images/blob/master/topology/ndv5-topo.xml](https://raw.githubusercontent.com/Azure/azhpc-images/refs/heads/master/topology/ndv5-topo.xml))
+[ndv5-topo.xml](https://raw.githubusercontent.com/Azure/azhpc-images/refs/heads/master/topology/ndv5-topo.xml)
 
 > [!NOTE]
-> 파일을 바로 다운로드 할 수 있는 링크로 변경 했습니다.
+> [파일](https://github.com/Azure/azhpc-images/blob/master/topology/ndv5-topo.xml)을 바로 다운로드 할 수 있는 링크로 변경 했습니다.
 > 
 
 파일은 컨테이너 이미지가 빌드 되는 컴퓨터 (또는 VM)에 Dockerfile의 위치에 복사해 주시면 됩니다.
