@@ -23,6 +23,64 @@ AKS용 AzureML Extension을 설치하면 학습 Pod들의 Orchestration을 위�
 
 Job이 실행 되면 학습 진행 중에 정확도(Accuracy), LOSS 및 노드의 CPU, Memory, Disk, Network 리소스 사용량을 Azure ML Studio에서 모니터링 할 수 있습니다. 
 
+#### 인프라적인 고려 사항
+
+분산 학습을 다수의 GPU가 제공 되는 Sku (NC80 v5의 경우 H100 2장, ND96 v5의 경우 H100 8장 등등)를 사용 하면서 AKS의 Pod별로 각각의 GPU를 할당량, CPU 코어 사용량 및  메모리 할당량을 조절 할 수 있습니다.
+일반적인 컨테이너화 된 응용프로그램의 경우 Kubernetes의 YAML 스팩에서 Request, Limit을 지정 할 수 있습니다만, Azure ML을 사용하는 경우는 이를 위해서 InstanceType을 설정해 줘야 합니다.
+
+<!-- ![image](https://github.com/user-attachments/assets/56a09d62-35c2-41be-af59-38ee88fd1086) -->
+<img href="https://learn.microsoft.com/en-us/azure/machine-learning/media/how-to-attach-kubernetes-to-workspace/machine-learning-anywhere-overview.png" width="1000" height="524"/>
+
+AKS에 AzureML Extenstion을 설치하고 ML Workspace에 클러스터를 Attach하면 생성 되는 CRD(Customer Resource Definition)로, 현재는 AKS에 배포되는 Pod들의 다양한 설정 중에 스케쥴링을 위한 nodeSelector와 리소스 사용량을 제어하는 resources 설정을 제공 합니다.
+
+기본적으로 ```defaultinstancetype``` 이라는 이름으로 다음의 리소스 사용량만 제한하고 있고, 스케쥴링은 랜덤하게 AKS가 결정하게 됩니다. 대부분의 AzureML 작업이 동일한 구성의 리소스만 사용하는 경우라면 같은 이름(```defaultinstancetype```)의 YAML 파일을 만들고 kubectl로 apply를 하시면 기본 설정이 변경 됩니다.
+
+```yaml
+resources:
+  requests:
+    cpu: "100m"
+    memory: "2Gi"
+  limits:
+    cpu: "2"
+    memory: "2Gi"
+    nvidia.com/gpu: null
+```
+
+다음은 ```amlgpuinstnacetype``` 이름의 예제로, AzureML의 Job 형태로 생성 되는 Pod의 생성 시:
+
+- Pod를 ```schedule-on: gpu-nodes``` 레비블이 있는 노드에 할당 하고,
+- Pod 시작시 CPU 4개 코어, 메모리 64기가 바이드를 할당 받게 되며
+- Pod가 사용 할 수 있는 리소스는 최대 1개의 GPU, CPU 12개 코어와 256기가 바이트 메모리로 제한 됩니다.
+
+```yaml
+apiVersion: amlarc.azureml.com/v1alpha1
+kind: InstanceType
+metadata:
+  name: amlgpuinstnacetype
+spec:
+  nodeSelector:
+    schedule-on: gpu-nodes
+  resources:
+    limits:
+      cpu: "12"
+      nvidia.com/gpu: 1
+      memory: "256Gi"
+    requests:
+      cpu: "4"
+      memory: "64Gi"
+```
+
+
+위의 내용을 ```aml-gpu-instnacetype.yaml``` 파일에 저장하고 아래 명령을 수행하면 연결된 AKS Cluster에 해당 Instance Type을 생성 하게 됩니다.
+
+```bash
+kubectl apply -f aml-gpu-instnacetype.yaml
+```
+
+자세한 내용은 아래 문서를 참고 하세요.
+
+[Create and manage instance types for efficient utilization of compute resources](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-manage-kubernetes-instance-types?view=azureml-api-2&tabs=select-instancetype-to-trainingjob-with-cli%2Cselect-instancetype-to-modeldeployment-with-cli%2Cdefine-resource-to-modeldeployment-with-cli#create-a-custom-instance-type)
+
 #### 학습 코드 변경
 
 ```
@@ -45,6 +103,9 @@ dist.init_process_group(backend='nccl', init_method='env://')
 
 #### 학습 파이프라인 코드 변경
 
+이전 설명 처럼 Instancetype 설정이 없다면 ```defaultinstancetype```에 지정된 형태로 Pod가 생성 됩니다. 아래 코드에서 보시면, command 객체 생성시 instance_count 다음에 instance_type을 설정하며, 이는 미리 AKS 클러스터에 정의된 InstanceType CRD의 설정에 따라서 노드 및 리소스 할당이 됩니다.
+추가로, AzureML Compute Cluster나 Compute Instance와 달리, Pod의 개수와 Pod당 실행 되는 프로세스의 설정이 변경 되어야 할 수 있습니다. 아래 코드는 NS96isr_H100_v5 노드를 2개 사용로 학습 하는 경우를 가정하고, Pod를 16개 만들고(```instance_count=num_training_nodes * num_gpus_per_node```), Podt당 1개의 GPU를 사용(```"process_count_per_instance": 1```)하는 하도록 설정 합니다.
+
 ```python
 num_training_nodes = 2 # Number of nodes available for distributed training
 num_gpus_per_node = 8 # Number of GPUs per node (8 for ND96isr_H100_v5)
@@ -59,6 +120,7 @@ job = command(
     environment=train_environment,
     compute=gpu_compute_target,
     instance_count=num_training_nodes * num_gpus_per_node,  # For AKS, we need to set the number of instances to WORLD_SIZE instead of # of nodes.
+    instance_type="amlgpuinstnacetype",
     distribution={
         "type": "PyTorch",
         # set process count to the number of gpus per node
@@ -78,7 +140,6 @@ job = command(
 > ND96isr_H100_v5 Topology 파일 링크
 > https://github.com/Azure/azhpc-images/blob/master/topology/ndv5-topo.xml
 >
-
 
 NCCL이 실행시 GPU Topology를 탐색을 통해 구성 하지만 미리 구성된 내용이 있다면 제공해 주는 것이 좋겠습니다. 이때 **NCCL_TOPO_FILE** 환경 변수를 통해서 설정해 줄 수 있습니다.
 
