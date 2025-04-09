@@ -29,7 +29,7 @@ Job이 실행 되면 학습 진행 중에 정확도(Accuracy), LOSS 및 노드�
 일반적인 컨테이너화 된 응용프로그램의 경우 Kubernetes의 YAML 스팩에서 Request, Limit을 지정 할 수 있습니다만, Azure ML을 사용하는 경우는 이를 위해서 InstanceType을 설정해 줘야 합니다.
 
 <!-- ![image](https://github.com/user-attachments/assets/56a09d62-35c2-41be-af59-38ee88fd1086) -->
-<img href="https://learn.microsoft.com/en-us/azure/machine-learning/media/how-to-attach-kubernetes-to-workspace/machine-learning-anywhere-overview.png" width="1000" height="524"/>
+<img src="https://learn.microsoft.com/en-us/azure/machine-learning/media/how-to-attach-kubernetes-to-workspace/machine-learning-anywhere-overview.png" width="1000" height="524"/>
 
 AKS에 AzureML Extenstion을 설치하고 ML Workspace에 클러스터를 Attach하면 생성 되는 CRD(Customer Resource Definition)로, 현재는 AKS에 배포되는 Pod들의 다양한 설정 중에 스케쥴링을 위한 nodeSelector와 리소스 사용량을 제어하는 resources 설정을 제공 합니다.
 
@@ -103,7 +103,9 @@ dist.init_process_group(backend='nccl', init_method='env://')
 
 #### 학습 파이프라인 코드 변경
 
-이전 설명 처럼 Instancetype 설정이 없다면 ```defaultinstancetype```에 지정된 형태로 Pod가 생성 됩니다. 아래 코드에서 보시면, command 객체 생성시 instance_count 다음에 instance_type을 설정하며, 이는 미리 AKS 클러스터에 정의된 InstanceType CRD의 설정에 따라서 노드 및 리소스 할당이 됩니다.
+이전 설명 처럼 Instancetype 설정이 없다면 ```defaultinstancetype```에 지정된 형태로 Pod가 생성 됩니다.  
+아래 코드에서 보시면, command 객체 생성시 instance_count 다음에 instance_type을 설정하며, 이는 미리 AKS 클러스터에 정의된 InstanceType CRD의 설정에 따라서 노드 및 리소스 할당이 됩니다.  
+
 추가로, AzureML Compute Cluster나 Compute Instance와 달리, Pod의 개수와 Pod당 실행 되는 프로세스의 설정이 변경 되어야 할 수 있습니다. 아래 코드는 NS96isr_H100_v5 노드를 2개 사용로 학습 하는 경우를 가정하고, Pod를 16개 만들고(```instance_count=num_training_nodes * num_gpus_per_node```), Podt당 1개의 GPU를 사용(```"process_count_per_instance": 1```)하는 하도록 설정 합니다.
 
 ```python
