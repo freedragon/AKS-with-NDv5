@@ -263,14 +263,13 @@ ARG FROM_IMAGE_NAME=nvcr.io/nvidia/pytorch:23.05-py3
 
 FROM ${FROM_IMAGE_NAME}
 
-RUN apt update
-RUN apt-get -y install build-essential
-RUN apt-get -y install infiniband-diags
-RUN apt-get -y install openssh-server
-RUN apt-get -y install kmod
+RUN apt-get update
+RUN apt-get -y install build-essential infiniband-diags openssh-server kmod
+
 COPY nccl-tests.sh .
-RUN ./nccl-tests.sh
 COPY ndv5-topo.xml .
+
+RUN ./nccl-tests.sh
 ```
 
 위의 Dockerfile에서 사용하는 nccl-tests.sh 파일의 내용은 다음과 같습니다. 아래 코드는 컨테이너에서 실행 되는 스크립트로, 실행 파일을 컨테이너 이미지 빌드 과정에서 Make로 컴파일을 하게 됩니다.
