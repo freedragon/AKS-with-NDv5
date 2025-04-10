@@ -318,7 +318,7 @@ spec:
 apiVersion: batch.volcano.sh/v1alpha1
 kind: Job
 metadata:
-  name: nccl-allreduce-job1
+  name: nccl-allreduce-job
 spec:
   schedulerName: volcano
   plugins:
@@ -439,7 +439,7 @@ Volcano Job 의 주요 구성 요소는 다음의 문서를 참고 하세요.
 저장된 YAML 파일로 작업을 실행하는 방법은 다음과 같습니다.
 
 ```console
-kubectl apply -f nccl-allreduce-job1.yaml
+kubectl apply -f nccl-allreduce-job.yaml
 ```
 
 실행 중인 Volcano Pod들의 상태 확인을 위해서는 다음의 명령줄 들 중 하나를 실행 하세요.
@@ -451,6 +451,9 @@ kubectl get podgroup
 ```console
 kubectl get job.batch.volcano.sh
 ```
+> [!NOTE]
+> job.batch.volcano.sh 대신 vcj 로 실행 가능 합니다.
+>
 
 실행 결과를 확인 하시려면 Volcano Job Master의 로그를 확인 해야 합니다. Pod 리스트를 확인해 보시면 mpimaster가 이름에 포함된 Pod를 찾으시면 됩니다.
 
