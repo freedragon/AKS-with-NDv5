@@ -305,13 +305,21 @@ docker push $ACR_NAME.azurecr.io/nccltest:2025030502
 
 Vocano로 2개의 ND H100 v5 노드에 Pod를 배포하고 Allreduce Job을 실행하고 결과를 출력하는 Job 설정 파일의 내용은 다음을 참고 하세요. 아래 내용을 nccl-allrecude-job1.yaml 파일에 저장 하고 ACR의 이름을 변경해 주세요.
 
+<!--
+spec:
+  minAvailable: 3 <-- Removed 
+  schedulerName: volcano
+  plugins:
+    ssh: []
+    svc: []
+-->
+
 ```yaml
 apiVersion: batch.volcano.sh/v1alpha1
 kind: Job
 metadata:
   name: nccl-allreduce-job1
 spec:
-  minAvailable: 3
   schedulerName: volcano
   plugins:
     ssh: []
@@ -424,6 +432,8 @@ spec:
               sizeLimit: 8Gi
 ---
 ```
+Volcano Job 의 주요 구성 요소는 다음의 문서를 참고 하세요.
+[VolcanoJob](https://volcano.sh/en/docs/vcjob/)
 
 저장된 YAML 파일로 작업을 실행하는 방법은 다음과 같습니다.
 
