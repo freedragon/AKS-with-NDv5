@@ -432,7 +432,8 @@ spec:
               sizeLimit: 8Gi
 ---
 ```
-Volcano Job 의 주요 구성 요소는 다음의 문서를 참고 하세요.
+Volcano Job 의 주요 구성 요소는 다음의 문서를 참고 하세요.  
+
 [VolcanoJob](https://volcano.sh/en/docs/vcjob/)
 
 저장된 YAML 파일로 작업을 실행하는 방법은 다음과 같습니다.
