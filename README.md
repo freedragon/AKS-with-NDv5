@@ -11,7 +11,7 @@ Azure AKS에서 ND96isr H100 v5 sku의 노드 풀을 배포하고, Nvidia Node F
 > - AKS의 배포 방법은 Azure CLI를 기준으로 설명하고 있으며, operator들의 설치는 Helm Chart를 이용 합니다.
 > - AzureML Extension을 설치 할 경우, Extension을 먼처 설치 하신 다음 NFD, network-operator, gpu-operator 순으로 설치하시면 됩니다.
 > - 또한, AzureML Extension을 설치 하시는 경우 Volcano가 기본 설치 됩니다. (```installVolcano```는 기본 true로 설정 됩니다) Volcano 설치는 Azure ML Extension을 사용하지 않는 경우만 참고 하세요.
-> - 반대로, 이미 Volcano를 사용 중인데 AzureML Extension을 설치가 필요하다면 아래 문서를 참고 하세요.
+> - 반대로, 이미 Volcano를 사용 중인데 AzureML Extension을 설치가 필요하다면 아래 문서를 참고 하세요.  
 >   [Volcano Scheduler](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-troubleshoot-kubernetes-extension?view=azureml-api-2#volcano-scheduler)
 
 > [!WARNING]
