@@ -1,0 +1,116 @@
+apiVersion: batch.volcano.sh/v1alpha1
+kind: Job
+metadata:
+  name: nccl-allreduce-job
+spec:
+  schedulerName: volcano
+  plugins:
+    ssh: []
+    svc: []
+  tasks:
+    - replicas: 1
+      name: mpimaster
+      policies:
+        - event: TaskCompleted
+          action: CompleteJob
+      template:
+        spec:
+          initContainers:
+            - command:
+                - /bin/bash
+                - -c
+                - |
+                  until [[ "$(kubectl get pod -l volcano.sh/job-name=nccl-allreduce-job1,volcano.sh/task-spec=mpiworker -o json | jq '.items | length')" != 0 ]]; do
+                    echo "Waiting for MPI worker pods..."
+                    sleep 3
+                  done
+                  echo "Waiting for MPI worker pods to be ready..."
+                  kubectl wait pod -l volcano.sh/job-name=nccl-allreduce-job1,volcano.sh/task-spec=mpiworker --for=condition=Ready --timeout=600s
+              image: mcr.microsoft.com/oss/kubernetes/kubectl:v1.26.3
+              name: wait-for-workers
+          serviceAccount: mpi-worker-view
+          containers:
+            - command:
+                - /bin/bash
+                - -c
+                - |
+                  MPI_HOST=$(cat /etc/volcano/mpiworker.host | tr "\n" ",")
+                  mkdir -p /var/run/sshd; /usr/sbin/sshd
+                  echo "HOSTS: $MPI_HOST"
+                  # mpirun --allow-run-as-root -np 16 -npernode 8 --bind-to numa --map-by ppr:8:node -hostfile /etc/volcano/mpiworker.host -x NCCL_DEBUG=info -x UCX_TLS=tcp -x NCCL_TOPO_FILE=/workspace/ndv4-topo.xml -x UCX_NET_DEVICES=eth0 -x CUDA_DEVICE_ORDER=PCI_BUS_ID -x NCCL_SOCKET_IFNAME=eth0 -mca coll_hcoll_enable 0 /workspace/nccl-tests/build/all_reduce_perf -b 8 -f 2 -g 1 -e 8G -c 1 | tee /home/re
+                  mpirun \
+                    --allow-run-as-root \
+                    -np 16 \
+                    -npernode 8 \
+                    --bind-to numa \
+                    --map-by ppr:8:node \
+                    -hostfile /etc/volcano/mpiworker.host  \
+                    -x SHARP_SMX_UCX_INTERFACE=mlx5_0:1 \
+                    -x LD_LIBRARY_PATH \
+                    -mca plm_rsh_no_tree_spawn 1 \
+                    -mca plm_rsh_num_concurrent 800 \
+                    -mca coll_hcoll_enable 0 \
+                    -x UCX_TLS=rc \
+                    -x UCX_NET_DEVICES=mlx5_0:1 \
+                    -x CUDA_DEVICE_ORDER=PCI_BUS_ID \
+                    -x NCCL_SOCKET_IFNAME=eth0 \
+                    -x NCCL_DEBUG=warn \
+                    -x NCCL_NET_GDR_LEVEL=5 \
+                    -x NCCL_MIN_NCHANNELS=32 \
+                    -x NCCL_TOPO_FILE=/workspace/ndv5-topo.xml \
+                    -x SHARP_COLL_ENABLE_SAT=1 \
+                    -x SHARP_COLL_LOG_LEVEL=3 \
+                    -x SHARP_COLL_ENABLE_PCI_RELAXED_ORDERING=1 \
+                    -x NCCL_COLLNET_ENABLE=1 \
+                    -x NCCL_ALGO=CollnetChain,NVLS \
+                    /workspace/nccl-tests/build/all_reduce_perf -b1K -f 2 -g1 -e 16G
+              image: <ACR 이름>.azurecr.io/pytorch_nccl_tests_2303:latest
+              securityContext:
+                capabilities:
+                  add: ["IPC_LOCK"]
+              name: mpimaster
+              ports:
+                - containerPort: 22
+                  name: mpijob-port
+              workingDir: /workspace
+              resources:
+                requests:
+                  cpu: 1
+          restartPolicy: OnFailure
+    - replicas: 2
+      name: mpiworker
+      template:
+        spec:
+          containers:
+            - command:
+                - /bin/bash
+                - -c
+                - |
+                  mkdir -p /var/run/sshd; /usr/sbin/sshd -D;
+              image: <ACR 이름>.azurecr.io/pytorch_nccl_tests_2303:latest
+              securityContext:
+                capabilities:
+                  add: ["IPC_LOCK"]
+              name: mpiworker
+              ports:
+                - containerPort: 22
+                  name: mpijob-port
+              workingDir: /workspace
+              resources:
+                requests:
+                  nvidia.com/gpu: 8
+                  nvidia.com/mlnxnics: 8
+                limits:
+                  nvidia.com/gpu: 8
+                  nvidia.com/mlnxnics: 8
+              volumeMounts:
+              - mountPath: /dev/shm
+                name: shm
+          restartPolicy: OnFailure
+          terminationGracePeriodSeconds: 0
+          volumes:
+          - name: shm
+            emptyDir:
+              medium: Memory
+              sizeLimit: 8Gi
+---
