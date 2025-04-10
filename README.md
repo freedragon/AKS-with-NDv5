@@ -10,7 +10,7 @@ Azure AKS에서 ND96isr H100 v5 sku의 노드 풀을 배포하고, Nvidia Node F
 > [!NOTE]
 > - AKS의 배포 방법은 Azure CLI를 기준으로 설명하고 있으며, operator들의 설치는 Helm Chart를 이용 합니다.
 > - AzureML Extension을 설치 할 경우, Extension을 먼처 설치 하신 다음 NFD, network-operator, gpu-operator 순으로 설치하시면 됩니다.
-> - 아래 Volcano 설치 부분에도 설명이 나옵니다만, AzureML Extension에 Volcano가 포함 되기 때문에 Volcano 설치는 스킵 하시기 바랍니다.
+> - 또한, AzureML Extension을 설치 하시는 경우 Volcano가 기본 설치 됩니다. (```installVolcano```는 기본 true로 설정 됩니다) Volcano 설치는 Azure ML Extension을 사용하지 않는 경우만 참고 하세요.
 
 > [!WARNING]
 > [이전 가이드](https://learn.microsoft.com/en-us/azure/aks/gpu-cluster?tabs=add-ubuntu-gpu-node-pool) 에 기술 되어 있는 GPU Device Plugin 설치를 하시게 되면 GPU Operator와 충돌이 발생 할 수 있습니다. Azure Reosurce Manager 또느 Terraform등으로 IaC 방식 배포를 하시는 경우 반드시 드라이버가 설치 되지 않도록 주의 해 주세요.
