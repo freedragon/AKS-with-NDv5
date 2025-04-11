@@ -3,6 +3,7 @@ kind: Job
 metadata:
   name: nccl-allreduce-job
 spec:
+  minAvailable: 2
   schedulerName: volcano
   plugins:
     ssh: []
@@ -20,12 +21,12 @@ spec:
                 - /bin/bash
                 - -c
                 - |
-                  until [[ "$(kubectl get pod -l volcano.sh/job-name=nccl-allreduce-job1,volcano.sh/task-spec=mpiworker -o json | jq '.items | length')" != 0 ]]; do
+                  until [[ "$(kubectl get pod -l volcano.sh/job-name=nccl-allreduce-job,volcano.sh/task-spec=mpiworker -o json | jq '.items | length')" != 0 ]]; do
                     echo "Waiting for MPI worker pods..."
                     sleep 3
                   done
                   echo "Waiting for MPI worker pods to be ready..."
-                  kubectl wait pod -l volcano.sh/job-name=nccl-allreduce-job1,volcano.sh/task-spec=mpiworker --for=condition=Ready --timeout=600s
+                  kubectl wait pod -l volcano.sh/job-name=nccl-allreduce-job,volcano.sh/task-spec=mpiworker --for=condition=Ready --timeout=600s
               image: mcr.microsoft.com/oss/kubernetes/kubectl:v1.26.3
               name: wait-for-workers
           serviceAccount: mpi-worker-view
