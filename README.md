@@ -307,14 +307,9 @@ docker push $ACR_NAME.azurecr.io/nccltest:2025030502
 
 Vocano로 2개의 ND H100 v5 노드에 Pod를 배포하고 Allreduce Job을 실행하고 결과를 출력하는 Job 설정 파일의 내용은 다음을 참고 하세요. 아래 내용을 nccl-allrecude-job1.yaml 파일에 저장 하고 ACR의 이름을 변경해 주세요.
 
-<!--
-spec:
-  minAvailable: 3 <-- Removed 
-  schedulerName: volcano
-  plugins:
-    ssh: []
-    svc: []
--->
+> [!NOTE]
+> 아래 YAML Spec에서 spec 섹션의 minAvailable은 노드 개수에 맞게 변경해 주셔야 합니다.
+> 
 
 ```yaml
 apiVersion: batch.volcano.sh/v1alpha1
@@ -322,6 +317,7 @@ kind: Job
 metadata:
   name: nccl-allreduce-job
 spec:
+  minAvailable: 2
   schedulerName: volcano
   plugins:
     ssh: []
@@ -339,12 +335,12 @@ spec:
                 - /bin/bash
                 - -c
                 - |
-                  until [[ "$(kubectl get pod -l volcano.sh/job-name=nccl-allreduce-job1,volcano.sh/task-spec=mpiworker -o json | jq '.items | length')" != 0 ]]; do
+                  until [[ "$(kubectl get pod -l volcano.sh/job-name=nccl-allreduce-job,volcano.sh/task-spec=mpiworker -o json | jq '.items | length')" != 0 ]]; do
                     echo "Waiting for MPI worker pods..."
                     sleep 3
                   done
                   echo "Waiting for MPI worker pods to be ready..."
-                  kubectl wait pod -l volcano.sh/job-name=nccl-allreduce-job1,volcano.sh/task-spec=mpiworker --for=condition=Ready --timeout=600s
+                  kubectl wait pod -l volcano.sh/job-name=nccl-allreduce-job,volcano.sh/task-spec=mpiworker --for=condition=Ready --timeout=600s
               image: mcr.microsoft.com/oss/kubernetes/kubectl:v1.26.3
               name: wait-for-workers
           serviceAccount: mpi-worker-view
@@ -453,9 +449,6 @@ kubectl get podgroup
 ```console
 kubectl get job.batch.volcano.sh
 ```
-> [!NOTE]
-> job.batch.volcano.sh 대신 vcj 로 실행 가능 합니다.
->
 
 실행 결과를 확인 하시려면 Volcano Job Master의 로그를 확인 해야 합니다. Pod 리스트를 확인해 보시면 mpimaster가 이름에 포함된 Pod를 찾으시면 됩니다.
 
