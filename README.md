@@ -120,7 +120,7 @@ az aks nodepool add \
 - Network Operator: 
     - Helmchart 이름: **network-operator**
     - 버젼: v24.07.0
-- GUP Operator (gpu-operator): 
+- GPU Operator (gpu-operator): 
     - Helmchart 이름: **gpu-operator**
     - 버젼: v24.9.2
 
